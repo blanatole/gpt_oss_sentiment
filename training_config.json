@@ -1,0 +1,27 @@
+{
+  "MODEL_ID": "openai/gpt-oss-20b",
+  "DATA_DIR": "jsonl_text",
+  "OUTPUT_DIR": "gpt-oss-20b-qlora-vsfc",
+
+  "BATCH_SIZE": 1,
+  "EVAL_BATCH_SIZE": 1,
+  "GRAD_ACCUM": 16,
+  "LR": 0.0005,
+  "EPOCHS": 3,
+  "SAVE_STEPS": 200,
+  "OPTIM": "paged_adamw_8bit",
+
+  "LOG_STEPS": 10,
+  "EVAL_STEPS": 10,
+  "AVERAGE": "macro",
+
+  "PACKING": true,
+  "BF16": true,
+  "WARMUP_RATIO": 0.1,
+  "LR_SCHEDULER_TYPE": "cosine",
+  "REPORT_TO": "none",
+
+  "EVAL_AFTER_STEPS": 0
+}
+
+

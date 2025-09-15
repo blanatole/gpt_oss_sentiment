@@ -5,14 +5,16 @@ import torch
 from typing import List, Dict
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, AutoConfig
 from peft import PeftModel
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report, f1_score
 import pandas as pd
+from tqdm import tqdm
 
 
 MODEL_ID = os.environ.get("MODEL_ID", "openai/gpt-oss-20b")
 ADAPTER_DIR = os.environ.get("ADAPTER_DIR", "gpt-oss-20b-qlora-finetune-v2")
 DATA_DIR = os.environ.get("DATA_DIR", os.path.join("jsonl_text"))
 TEST_FILE = os.environ.get("TEST_FILE", os.path.join(DATA_DIR, "test_instruction.jsonl"))
+AVERAGE = os.environ.get("AVERAGE", "macro")  # macro, weighted, micro
 OUTPUT_CSV = os.environ.get("OUTPUT_CSV", "evaluation_results.csv")
 
 
@@ -159,10 +161,10 @@ def evaluate_model():
     predicted_labels = []
     
     print("Starting evaluation...")
-    for i, example in enumerate(test_records):
+    for i, example in enumerate(tqdm(test_records, desc="Evaluating test", leave=False)):
         if i % 10 == 0:  # Clear cache more frequently
             torch.cuda.empty_cache()
-            print(f"Processing example {i+1}/{len(test_records)}")
+            # progress handled by tqdm
         
         instruction = example.get("instruction", "")
         input_text = example.get("input", "")
@@ -201,7 +203,7 @@ def evaluate_model():
     if true_labels and predicted_labels:
         accuracy = accuracy_score(true_labels, predicted_labels)
         precision, recall, f1, _ = precision_recall_fscore_support(
-            true_labels, predicted_labels, average='weighted'
+            true_labels, predicted_labels, average=AVERAGE
         )
         
         print(f"Accuracy: {accuracy:.4f}")
@@ -211,7 +213,7 @@ def evaluate_model():
         
         # Detailed classification report
         print("\nDetailed Classification Report:")
-        print(classification_report(true_labels, predicted_labels))
+        print(classification_report(true_labels, predicted_labels, digits=4))
     
     # Save results to CSV
     print(f"\nSaving results to {OUTPUT_CSV}...")
@@ -242,7 +244,8 @@ def evaluate_model():
         'accuracy': accuracy if 'accuracy' in locals() else 0,
         'precision': precision if 'precision' in locals() else 0,
         'recall': recall if 'recall' in locals() else 0,
-        'f1_score': f1 if 'f1' in locals() else 0
+        'f1_score': f1 if 'f1' in locals() else 0,
+        'average': AVERAGE
     }
     
     with open('evaluation_summary.json', 'w', encoding='utf-8') as f:

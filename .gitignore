@@ -67,4 +67,8 @@ transformers_cache/
 results/
 outputs/
 my_results.csv
-evaluation_summary.json
+# evaluation_summary.json
+best_macrof1/
+
+*.jinja
+
