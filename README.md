@@ -127,6 +127,26 @@ export SAVE_STEPS="200"
 export OPTIM="paged_adamw_8bit"
 ```
 
+#### Recommended GPU Config (RTX 6000 Ada, ~48GB VRAM, CUDA 12.8)
+
+- Flash Attention: enabled (`flash_attention_2`)
+- Quantization: use model's native MXFP4 if available; fallback to 4-bit NF4 (bitsandbytes)
+- BATCH_SIZE: 1
+- GRAD_ACCUM: 16
+- EVAL_BATCH_SIZE: 1
+- MAX_SEQ_LEN: 2048
+- LR: 5e-4 (cosine + warmup 10%)
+- EPOCHS: 3
+- OPTIM: paged_adamw_8bit
+- PACKING: true
+- bf16: true
+
+One-line run with these settings:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 MODEL_ID="openai/gpt-oss-20b" DATA_DIR="jsonl_text" OUTPUT_DIR="gpt-oss-20b-qlora-vsfc" BATCH_SIZE="1" EVAL_BATCH_SIZE="1" GRAD_ACCUM="16" LR="5e-4" EPOCHS="3" SAVE_STEPS="200" OPTIM="paged_adamw_8bit" python3 train_qlora_gpt_oss_20b.py
+```
+
 #### Start Training
 
 ```bash
